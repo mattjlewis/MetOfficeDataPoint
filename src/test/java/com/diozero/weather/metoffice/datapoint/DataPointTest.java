@@ -1,44 +1,42 @@
-package org.matt.metoffice.datapoint;
+package com.diozero.weather.metoffice.datapoint;
 
 import java.io.IOException;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Map.Entry;
 
 import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
+import com.luckycatlabs.sunrisesunset.dto.Location;
 
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
 
 public class DataPointTest {
-	private static final String API_KEY = "2e020df4-1304-4e3a-b5e5-216f0647fc16";
-	private static final int HASLEMERE_SITE_ID = 324247;
-
 	public static void main(String[] args) {
 		Float my_latitude = null;
 		Float my_longitude = null;
-		LongOpt[] long_opts = new LongOpt[2];
-		long_opts[0] = new LongOpt("latitude", LongOpt.REQUIRED_ARGUMENT, null, 'a');
-		long_opts[1] = new LongOpt("longitude", LongOpt.REQUIRED_ARGUMENT, null, 'o');
-		Getopt g = new Getopt("DataPoint", args, ":a:o:", long_opts);
+		String api_key = null;
+		Integer site_id = null;
+		LongOpt[] long_opts = new LongOpt[] {
+			new LongOpt("apikey", LongOpt.REQUIRED_ARGUMENT, null, 'k'),
+			new LongOpt("latitude", LongOpt.REQUIRED_ARGUMENT, null, 'a'),
+			new LongOpt("longitude", LongOpt.REQUIRED_ARGUMENT, null, 'o'),
+			new LongOpt("siteid", LongOpt.REQUIRED_ARGUMENT, null, 's')
+		};
+		Getopt g = new Getopt("DataPointTest", args, ":k:a:o:s:", long_opts);
 		int c;
 		String arg;
 		while ((c = g.getopt()) != -1) {
 			switch (c) {
-			case 0:
+			case 'k':
 				arg = g.getOptarg();
-				System.out.println("Got long option with value '" +
-						/*(char)(new Integer(sb.toString())).intValue() +*/ "' with argument " +
-                        ((arg != null) ? arg : "null"));
-				break;
-			case 1:
-				System.out.println("I see you have return in order set and that a non-option argv element was just found " +
-                             "with the value '" + g.getOptarg() + "'");
-				break;
-			case 2:
-				arg = g.getOptarg();
-				System.out.println("I know this, but pretend I didn't");
-				//System.out.println("We picked option " + longopts[g.getLongind()].getName() +
-				//		" with value " + ((arg != null) ? arg : "null"));
+				if (arg == null || arg.isEmpty()) {
+					System.out.println("Empty arg value for apikey");
+				} else {
+					api_key = arg;
+				}
 				break;
 			case 'a':
 				arg = g.getOptarg();
@@ -56,57 +54,123 @@ public class DataPointTest {
 					my_longitude = Float.valueOf(arg);
 				}
 				break;
+			case 's':
+				arg = g.getOptarg();
+				if (arg == null || arg.isEmpty()) {
+					System.out.println("Empty arg value for siteid");
+				} else {
+					site_id = Integer.valueOf(arg);
+				}
+				break;
 			case ':':
-				System.out.println("Doh! You need an argument for option " + (char)g.getOptopt());
+				System.out.println("You need an argument for option '" + (char)g.getOptopt() + "'");
 				break;
 			case '?':
 				System.out.println("The option '" + (char)g.getOptopt() + "' is not valid");
 				break;
 			default:
-				System.out.println("getopt() returned " + c);
+				System.out.println("Unhandled getopt option, getopt() returned: '" + c + "'");
 			}
 		}
-		System.out.format("my_lat=%f, my_lon=%f%n", my_latitude, my_longitude);
+		if (api_key == null) {
+			System.out.println("Error, please specify your DataPoint API key");
+			System.exit(2);
+		}
 		
-		DataPoint dp = new DataPoint(API_KEY);
+		if (site_id == null && (my_latitude == null || my_longitude == null)) {
+			System.out.println("Error, please specify either a siteid or lat/long");
+			System.exit(2);
+		}
+		
+		DataPoint dp = new DataPoint(api_key);
 		
 		try {
 			dp.init();
 			
-			Location location = null;
-			if (my_latitude != null && my_longitude != null) {
+			ForecastLocation location = null;
+			if (site_id != null) {
+				location = dp.getLocation(site_id.intValue());
+				if (location == null) {
+					System.out.println("Invalid site id '" + site_id + "'");
+					return;
+				}
+			} else if (my_latitude != null && my_longitude != null) {
+				System.out.format("Searching for closest location to [%f, %f]%n", my_latitude, my_longitude);
 				location = dp.findClosest(my_latitude.floatValue(), my_longitude.floatValue());
 			}
-			
 			if (location == null) {
-				location = dp.getLocation(HASLEMERE_SITE_ID);
+				System.out.println("Location not found");
+				return;
 			}
+			
 			System.out.println("Using location: " + location);
 			
-			com.luckycatlabs.sunrisesunset.dto.Location loc = new com.luckycatlabs.sunrisesunset.dto.Location(
-					location.getLatitude(), location.getLongitude());
-			SunriseSunsetCalculator calculator = new SunriseSunsetCalculator(loc, TimeZone.getDefault());
-			Calendar now = Calendar.getInstance();
-			Calendar sunrise = calculator.getOfficialSunriseCalendarForDate(now);
-			Calendar sunset = calculator.getOfficialSunsetCalendarForDate(now);
-			System.out.println("sunrise=" + sunrise.getTime() + ", sunset=" + sunset.getTime());
+			SunriseSunsetCalculator calculator = new SunriseSunsetCalculator(
+					new Location(location.getLatitude(), location.getLongitude()), TimeZone.getDefault());
+			
+			ZonedDateTime sunset_time = null;
+			ZonedDateTime sunrise_time = null;
 			
 			Forecast f = dp.getForecast(location.getId(), DataPoint.Resolution.THREE_HOURLY);
 			if (f != null) {
+				TreeMap<ZonedDateTime, Report> forecasts = new TreeMap<>();
 				Map<String, Param> params = f.getParams();
-				Date start = f.getDataValue().getDataDate();
+				ZonedDateTime start = f.getDataValue().getDataDate();
 				String type = f.getDataValue().getType();
 				System.out.println(type + " for " + start);
+				int clear_skies = 0;
 				for (Period period : f.getDataValue().getLocation().getPeriods()) {
 					System.out.println(period.getType() + ": " + period.getValue());
+					
+					if (sunrise_time == null) {
+						// Initialise to today's sunrise
+						Calendar cal = Calendar.getInstance();
+						cal.setTime(Date.from(ZonedDateTime.from(period.getValue()).toInstant()));
+						sunrise_time = ZonedDateTime.ofInstant(
+								calculator.getOfficialSunriseCalendarForDate(cal).toInstant(), ZoneId.systemDefault());
+					}
+					if (sunset_time == null) {
+						// Initialise to previous day's sunset
+						Calendar cal = Calendar.getInstance();
+						cal.setTime(Date.from(ZonedDateTime.from(period.getValue()).toInstant()));
+						cal.add(Calendar.DAY_OF_MONTH, -1);
+						sunset_time = ZonedDateTime.ofInstant(
+								calculator.getOfficialSunsetCalendarForDate(cal).toInstant(), ZoneId.systemDefault());
+					}
+					
 					for (Report r : period.getReports()) {
-						System.out.println("Time: " + r.getReportDateTime() + " [" + r.getMinutesAfterMidnight() + "]");
-						Map<String, Object> values = r.getValues();
-						for (Entry<String, Object> entry : values.entrySet()) {
-							Param p = params.get(entry.getKey());
-							System.out.println(p.getDescription() + ": " + entry.getValue() + " " + p.getUnits());
+						ZonedDateTime time = r.getReportDateTime();
+						forecasts.put(time, r);
+						
+						// A new day?
+						if (time.isAfter(sunrise_time)) {
+							clear_skies = 0;
+							
+							// Set sunset to current day's value
+							Calendar cal = Calendar.getInstance();
+							cal.setTime(Date.from(time.toInstant()));
+							sunset_time = ZonedDateTime.ofInstant(
+									calculator.getOfficialSunsetCalendarForDate(cal).toInstant(), ZoneId.systemDefault());
+							
+							// Set sunrise to next day's value
+							cal.add(Calendar.DAY_OF_MONTH, 1);
+							sunrise_time = ZonedDateTime.ofInstant(
+									calculator.getOfficialSunriseCalendarForDate(cal).toInstant(), ZoneId.systemDefault());
 						}
-						System.out.println();
+						
+						if (time.isAfter(sunset_time) && time.isBefore(sunrise_time)) {
+							System.out.println("Nightime forecast, Time: " + DateTimeFormatter.RFC_1123_DATE_TIME.format(time) + " [" + r.getMinutesAfterMidnight()
+								+ ", Weather type: " + r.getWeatherType() + " - '" + WeatherTypeMapping.forType(r.getWeatherType()) + "']");
+							if (r.getWeatherType().equals("0")) {
+								clear_skies++;
+								System.out.println("\tClear sky #" + clear_skies + " !!");
+								Map<String, Object> values = r.getValues();
+								for (Entry<String, Object> entry : values.entrySet()) {
+									Param p = params.get(entry.getKey());
+									System.out.println("\t" + p.getDescription() + ": " + entry.getValue() + " " + p.getUnits());
+								}
+							}
+						}
 					}
 				}
 			}
