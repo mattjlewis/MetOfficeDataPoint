@@ -1,20 +1,20 @@
-package org.matt.metoffice.datapoint;
+package com.diozero.weather.metoffice.datapoint;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 public class DataValue {
-	private Date dataDate;
+	private ZonedDateTime dataDate;
 	private String type;
-	private Location location;
+	private ForecastLocation location;
 	
 	public DataValue() {
 	}
 
-	public Date getDataDate() {
+	public ZonedDateTime getDataDate() {
 		return dataDate;
 	}
 
-	public void setDataDate(Date dataDate) {
+	public void setDataDate(ZonedDateTime dataDate) {
 		this.dataDate = dataDate;
 	}
 
@@ -26,11 +26,11 @@ public class DataValue {
 		this.type = type;
 	}
 
-	public Location getLocation() {
+	public ForecastLocation getLocation() {
 		return location;
 	}
 
-	public void setLocation(Location location) {
+	public void setLocation(ForecastLocation location) {
 		this.location = location;
 	}
 

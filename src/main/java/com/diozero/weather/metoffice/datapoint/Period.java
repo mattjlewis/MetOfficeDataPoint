@@ -1,11 +1,11 @@
-package org.matt.metoffice.datapoint;
+package com.diozero.weather.metoffice.datapoint;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 public class Period {
 	private String type;
-	private Date value;
+	private ZonedDateTime value;
 	private List<Report> reports;
 	
 	public Period() {
@@ -27,11 +27,11 @@ public class Period {
 		this.type = type;
 	}
 
-	public Date getValue() {
+	public ZonedDateTime getValue() {
 		return value;
 	}
 
-	public void setValue(Date value) {
+	public void setValue(ZonedDateTime value) {
 		this.value = value;
 	}
 

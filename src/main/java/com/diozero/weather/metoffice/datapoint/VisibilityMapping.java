@@ -1,10 +1,10 @@
-package org.matt.metoffice.datapoint;
+package com.diozero.weather.metoffice.datapoint;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class VisibilityCodes {
+public class VisibilityMapping {
 	static final Map<String, String> VALUES_MAP;
 	static {
 		Map<String, String> map = new HashMap<>();

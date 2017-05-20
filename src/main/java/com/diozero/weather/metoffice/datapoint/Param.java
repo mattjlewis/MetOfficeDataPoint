@@ -1,4 +1,4 @@
-package org.matt.metoffice.datapoint;
+package com.diozero.weather.metoffice.datapoint;
 
 public class Param {
 	private String name;

@@ -1,11 +1,13 @@
-package org.matt.metoffice.datapoint;
+package com.diozero.weather.metoffice.datapoint;
 
-import java.util.*;
+import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Report {
 	private int minutesAfterMidnight;
-	private Date periodStart;
-	private Calendar reportDateTime;
+	private ZonedDateTime periodStart;
+	private ZonedDateTime reportDateTime;
 	
 	private Map<String, Object> values;
 	public static final String MAX_UV_INDEX = "U";
@@ -29,7 +31,7 @@ public class Report {
 	public static final String WIND_DIRECTION = "D";
 	private String windDirection;
 	
-	public Report(Date periodStart) {
+	public Report(ZonedDateTime periodStart) {
 		values = new HashMap<>();
 		this.periodStart = periodStart;
 	}
@@ -40,13 +42,11 @@ public class Report {
 
 	public void setMinutesAfterMidnight(int minutesAfterMidnight) {
 		this.minutesAfterMidnight = minutesAfterMidnight;
-		reportDateTime = Calendar.getInstance();
-		reportDateTime.setTime(periodStart);
-		reportDateTime.add(Calendar.MINUTE, minutesAfterMidnight);
+		reportDateTime = periodStart.plusMinutes(minutesAfterMidnight);
 	}
 	
-	public Date getReportDateTime() {
-		return reportDateTime.getTime();
+	public ZonedDateTime getReportDateTime() {
+		return reportDateTime;
 	}
 	
 	public Map<String, Object> getValues() {
@@ -68,7 +68,7 @@ public class Report {
 	
 	public void setWeatherType(String weatherType) {
 		this.weatherType = weatherType;
-		values.put(WEATHER_TYPE, WeatherCodes.VALUES_MAP.get(this.weatherType));
+		values.put(WEATHER_TYPE, WeatherTypeMapping.VALUES_MAP.get(this.weatherType));
 	}
 	
 	public String getVisibility() {
@@ -76,12 +76,12 @@ public class Report {
 	}
 	
 	public String getVisibilityValue() {
-		return VisibilityCodes.VALUES_MAP.get(visibility);
+		return VisibilityMapping.VALUES_MAP.get(visibility);
 	}
 	
 	public void setVisibility(String visibility) {
 		this.visibility = visibility;
-		values.put(VISIBILITY, VisibilityCodes.VALUES_MAP.get(this.visibility));
+		values.put(VISIBILITY, VisibilityMapping.VALUES_MAP.get(this.visibility));
 	}
 	
 	public int getTemperature() {

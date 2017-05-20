@@ -1,22 +1,22 @@
-package org.matt.metoffice.datapoint;
+package com.diozero.weather.metoffice.datapoint;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 public class Resource {
-	private Date dataDate;
+	private ZonedDateTime dataDate;
 	private String res;
 	private String type;
-	private List<Date> timeSteps;
+	private List<ZonedDateTime> timeSteps;
 	
 	public Resource() {
 	}
 
-	public Date getDataDate() {
+	public ZonedDateTime getDataDate() {
 		return dataDate;
 	}
 
-	public void setDataDate(Date dataDate) {
+	public void setDataDate(ZonedDateTime dataDate) {
 		this.dataDate = dataDate;
 	}
 
@@ -36,11 +36,11 @@ public class Resource {
 		this.type = type;
 	}
 
-	public List<Date> getTimesteps() {
+	public List<ZonedDateTime> getTimesteps() {
 		return timeSteps;
 	}
 
-	public void setTimeSteps(List<Date> timeSteps) {
+	public void setTimeSteps(List<ZonedDateTime> timeSteps) {
 		this.timeSteps = timeSteps;
 	}
 

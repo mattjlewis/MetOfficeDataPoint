@@ -1,10 +1,11 @@
-package org.matt.metoffice.datapoint;
+package com.diozero.weather.metoffice.datapoint;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -20,8 +21,7 @@ import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.shape.Point;
 
 public class DataPoint {
-	private static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";	// e.g. 2015-12-09T15:00:00Z
-	private static final String DATE_FORMAT = "yyyy-MM-dd'Z'";	// e.g. 2015-12-09Z
+	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-ddz");	// e.g. 2015-12-09Z
 	
 	private static final String ROOT_URL = "http://datapoint.metoffice.gov.uk/public/data";
 	// Data categories
@@ -42,7 +42,7 @@ public class DataPoint {
 
 	private String apiKey;
 	private WebTarget rootTarget;
-	private List<Location> locations;
+	private List<ForecastLocation> locations;
 	private Resource capabilities;
 	private SpatialContext spatialContext;
 	
@@ -122,7 +122,7 @@ public class DataPoint {
 		return forecast;
 	}
 	
-	public Location findClosest(float latitude, float longitude) {
+	public ForecastLocation findClosest(double latitude, double longitude) {
 		Point p = spatialContext.makePoint(latitude, longitude);
 		
 		// Can this be done with streams?
@@ -130,8 +130,8 @@ public class DataPoint {
 		//OptionalDouble min = locations.stream().mapToDouble(my_p::calcDistance).min();
 		
 		double min_dist = Double.MAX_VALUE;
-		Location closest = null;
-		for (Location location : locations) {
+		ForecastLocation closest = null;
+		for (ForecastLocation location : locations) {
 			double dist = spatialContext.calcDistance(p, location.getPoint());
 			if (dist < min_dist) {
 				closest = location;
@@ -142,8 +142,8 @@ public class DataPoint {
 		return closest;
 	}
 
-	public Location getLocation(int siteId) {
-		for (Location location : locations) {
+	public ForecastLocation getLocation(int siteId) {
+		for (ForecastLocation location : locations) {
 			if (location.getId() == siteId) {
 				return location;
 			}
@@ -154,16 +154,10 @@ public class DataPoint {
 
 	private static Resource parseResource(JsonObject jsonObject) {
 		Resource resource = new Resource();
-		DateFormat date_format = new SimpleDateFormat(DATE_TIME_FORMAT);
 		for (Entry<String, JsonValue> entry : jsonObject.entrySet()) {
 			switch (entry.getKey()) {
 			case "dataDate":
-				try {
-					resource.setDataDate(date_format.parse(((JsonString)entry.getValue()).getString()));
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				resource.setDataDate(DateTimeFormatter.ISO_ZONED_DATE_TIME.parse(((JsonString)entry.getValue()).getString(), ZonedDateTime::from));
 				break;
 			case "res":
 				resource.setRes(((JsonString)entry.getValue()).getString());
@@ -174,15 +168,10 @@ public class DataPoint {
 			case "TimeSteps":
 				JsonArray time_steps_json = ((JsonObject)entry.getValue()).getJsonArray("TS");
 				
-				List<Date> time_steps = new ArrayList<>();
+				List<ZonedDateTime> time_steps = new ArrayList<>();
 				for (JsonValue value : time_steps_json) {
 					JsonString s_value = (JsonString)value;
-					try {
-						time_steps.add(date_format.parse(s_value.getString()));
-					} catch (ParseException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					time_steps.add(DateTimeFormatter.ISO_ZONED_DATE_TIME.parse(s_value.getString(), ZonedDateTime::from));
 				}
 				resource.setTimeSteps(time_steps);
 				break;
@@ -195,18 +184,11 @@ public class DataPoint {
 	}
 
 	private DataValue parseDataValue(JsonObject dv_json) {
-		DateFormat date_format = new SimpleDateFormat(DATE_TIME_FORMAT);
-		
 		DataValue data_value = new DataValue();
 		for (Entry<String, JsonValue> entry : dv_json.entrySet()) {
 			switch (entry.getKey()) {
 			case "dataDate":
-				try {
-					data_value.setDataDate(date_format.parse(((JsonString)entry.getValue()).getString()));
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				data_value.setDataDate(DateTimeFormatter.ISO_ZONED_DATE_TIME.parse(((JsonString)entry.getValue()).getString(), ZonedDateTime::from));
 				break;
 			case "type":
 				data_value.setType(((JsonString)entry.getValue()).getString());
@@ -247,12 +229,12 @@ public class DataPoint {
 		return params;
 	}
 	
-	private Location parseLocation(JsonValue value) {
+	private ForecastLocation parseLocation(JsonValue value) {
 		return parseLocation((JsonObject)value);
 	}
 
-	private Location parseLocation(JsonObject obj) {
-		Location location = new Location();
+	private ForecastLocation parseLocation(JsonObject obj) {
+		ForecastLocation location = new ForecastLocation();
 		Float lat = null;
 		Float lon = null;
 		for (Entry<String, JsonValue> entry : obj.entrySet()) {
@@ -295,6 +277,9 @@ public class DataPoint {
 			case "Period":
 				location.setPeriods(parsePeriods((JsonArray)entry.getValue()));
 				break;
+			case "obsSource":
+				location.setObsSource(((JsonString)entry.getValue()).getString());
+				break;
 			default:
 				System.out.println("Unrecognised Location key '" + entry.getKey() + "'");
 			}
@@ -308,7 +293,6 @@ public class DataPoint {
 
 	private static List<Period> parsePeriods(JsonArray periods_json) {
 		List<Period> periods = new ArrayList<>();
-		DateFormat date_format = new SimpleDateFormat(DATE_FORMAT);
 		for (JsonValue value : periods_json) {
 			Period period = new Period();
 			for (Entry<String, JsonValue> entry : ((JsonObject)value).entrySet()) {
@@ -317,12 +301,7 @@ public class DataPoint {
 					period.setType(((JsonString)entry.getValue()).getString());
 					break;
 				case "value":
-					try {
-						period.setValue(date_format.parse(((JsonString)entry.getValue()).getString()));
-					} catch (ParseException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					period.setValue(DATE_FORMATTER.parse(((JsonString)entry.getValue()).getString(), LocalDate::from).atStartOfDay(ZoneId.systemDefault()));
 					break;
 				case "Rep":
 					List<Report> reports = new ArrayList<>();
@@ -342,7 +321,7 @@ public class DataPoint {
 		return periods;
 	}
 
-	private static Report parseReport(JsonObject object, Date periodStart) {
+	private static Report parseReport(JsonObject object, ZonedDateTime periodStart) {
 		Report report = new Report(periodStart);
 		for (Entry<String, JsonValue> entry : object.entrySet()) {
 			switch (entry.getKey()) {
@@ -417,7 +396,7 @@ class MyPoint {
 		return point;
 	}
 
-	public double calcDistance(Location location) {
+	public double calcDistance(ForecastLocation location) {
 		return spatialContext.calcDistance(point, location.getPoint());
 	}
 }

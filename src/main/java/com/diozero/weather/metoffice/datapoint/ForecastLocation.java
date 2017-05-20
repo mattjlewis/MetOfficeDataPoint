@@ -1,10 +1,10 @@
-package org.matt.metoffice.datapoint;
+package com.diozero.weather.metoffice.datapoint;
 
 import java.util.List;
 
 import com.spatial4j.core.shape.Point;
 
-public class Location {
+public class ForecastLocation {
 	private int id;
 	private Float elevation;
 	private float latitude;
@@ -17,8 +17,9 @@ public class Location {
 	private String country;
 	private String continent;
 	private List<Period> periods;
+	private String obsSource;
 	
-	public Location() {
+	public ForecastLocation() {
 	}
 
 	public int getId() {
@@ -107,6 +108,14 @@ public class Location {
 
 	public void setContinent(String continent) {
 		this.continent = continent;
+	}
+	
+	public String getObsSource() {
+		return obsSource;
+	}
+
+	public void setObsSource(String obsSource) {
+		this.obsSource = obsSource;
 	}
 
 	@Override
