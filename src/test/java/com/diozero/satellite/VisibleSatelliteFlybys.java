@@ -22,14 +22,18 @@ import com.luckycatlabs.sunrisesunset.dto.Location;
 
 public class VisibleSatelliteFlybys {
 	public static void main(String[] args) throws MalformedURLException {
-		if (args.length < 1) {
-			System.out.println("Usage: " + VisibleSatelliteFlybys.class.getName() + " <api-key>");
+		if (args.length < 5) {
+			System.out.println("Usage: " + VisibleSatelliteFlybys.class.getName() + " <api-key> <lat> <long> <alt> <name>");
 			System.exit(1);
 		}
-		String api_key = args[0];
+		int arg = 0;
+		String api_key = args[arg++];
 		
-		ObservationLocation obs_loc = new ObservationLocation(51.0900521, -0.7132183, 150, "Haslemere");
-		//ObservationLocation obs_loc = new ObservationLocation(53.915635, -1.698590, 80, "Otley");
+		double latitude = Double.parseDouble(args[arg++]);
+		double longitude = Double.parseDouble(args[arg++]);
+		double altitude = Double.parseDouble(args[arg++]);
+		String name = args[arg++];
+		ObservationLocation obs_loc = new ObservationLocation(latitude, longitude, altitude, name);
 		
 		double min_peak_elev_deg = 45;
 		
