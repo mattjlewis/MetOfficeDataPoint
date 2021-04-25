@@ -12,57 +12,164 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<!-- Java version -->
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.release>8</maven.compiler.release>
+
+		<!-- Plugin versions -->
+		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+		
+		<!-- Library versions -->
+		<spacial4j.version>0.5</spacial4j.version>
+		<SunriseSunsetCalculator.version>1.2</SunriseSunsetCalculator.version>
+		<java-getopt.version>1.0.13</java-getopt.version>
+		<jersey-client.version>3.0.1</jersey-client.version>
+		<jakarta-json.version>2.0.0</jakarta-json.version>
+		<jakarta-activation.version>2.0.1</jakarta-activation.version>
+		<javax-json.version>1.1.4</javax-json.version>
+		<httpclient.version>4.5.13</httpclient.version>
+		<jdom2.version>2.0.6</jdom2.version>
+		<orekit.version>10.3</orekit.version>
+		
+		<junit.version>5.7.1</junit.version>
 	</properties>
+	
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.spatial4j</groupId>
+				<artifactId>spatial4j</artifactId>
+				<version>${spacial4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.luckycatlabs</groupId>
+				<artifactId>SunriseSunsetCalculator</artifactId>
+				<version>${SunriseSunsetCalculator.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>gnu.getopt</groupId>
+				<artifactId>java-getopt</artifactId>
+				<version>${java-getopt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.glassfish.jersey.core</groupId>
+				<artifactId>jersey-client</artifactId>
+				<version>${jersey-client.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.glassfish.jersey.inject</groupId>
+				<artifactId>jersey-hk2</artifactId>
+				<version>${jersey-client.version}</version>
+			</dependency>
+			<!--
+			<dependency>
+				<groupId>org.glassfish</groupId>
+				<artifactId>javax.json</artifactId>
+				<version>${javax-json.version}</version>
+			</dependency>
+			-->
+			<dependency>
+				<groupId>org.glassfish</groupId>
+				<artifactId>jakarta.json</artifactId>
+				<version>${jakarta-json.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>jakarta.activation</groupId>
+				<artifactId>jakarta.activation-api</artifactId>
+				<version>${jakarta-activation.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpclient</artifactId>
+				<version>${httpclient.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jdom</groupId>
+				<artifactId>jdom2</artifactId>
+				<version>${jdom2.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.orekit</groupId>
+				<artifactId>orekit</artifactId>
+				<version>${orekit.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.junit</groupId>
+				<artifactId>junit-bom</artifactId>
+				<version>${junit.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>com.spatial4j</groupId>
 			<artifactId>spatial4j</artifactId>
-			<version>0.5</version>
 		</dependency>
 		<dependency>
 			<groupId>com.luckycatlabs</groupId>
 			<artifactId>SunriseSunsetCalculator</artifactId>
-			<version>1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>gnu.getopt</groupId>
 			<artifactId>java-getopt</artifactId>
-			<version>1.0.13</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.core</groupId>
 			<artifactId>jersey-client</artifactId>
-			<version>2.22.1</version>
 		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.inject</groupId>
+			<artifactId>jersey-hk2</artifactId>
+		</dependency>
+		<!--
 		<dependency>
 			<groupId>org.glassfish</groupId>
 			<artifactId>javax.json</artifactId>
-			<version>1.0.4</version>
+		</dependency>
+		-->
+		<dependency>
+			<groupId>org.glassfish</groupId>
+			<artifactId>jakarta.json</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.activation</groupId>
+			<artifactId>jakarta.activation-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jdom</groupId>
 			<artifactId>jdom2</artifactId>
-			<version>2.0.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.orekit</groupId>
 			<artifactId>orekit</artifactId>
-			<version>8.0</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>${maven-compiler-plugin.version}</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

@@ -12,7 +12,6 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.analytical.tle.TLE;
-import org.orekit.propagation.analytical.tle.TLESeries;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -20,6 +19,7 @@ import org.orekit.time.TimeScalesFactory;
 import com.diozero.satellite.orekit.OrekitUtil;
 import com.diozero.satellite.orekit.SatelliteUtil;
 import com.diozero.satellite.orekit.TleList;
+import com.diozero.satellite.orekit.TleSeries;
 
 /**
  * ISS: 25544
@@ -56,7 +56,7 @@ public class OrekitTest {
 			String series_name = "stations.txt";
 			System.out.println();
 			System.out.println("Series: " + series_name);
-			TLESeries series = new TLESeries(series_name, true);
+			TleSeries series = new TleSeries(series_name, true);
 			System.out.println("Available satellite numbers: " + series.getAvailableSatelliteNumbers());
 			TLE tle = series.getClosestTLE(date);
 			System.out.println("Closest TLE: " + tle.getSatelliteNumber() + ", " + tle.getLaunchNumber() + ", " + tle.getLaunchYear() + ", " + tle.getDate());
@@ -65,7 +65,7 @@ public class OrekitTest {
 			// ISS TLEs
 			System.out.println();
 			series_name = "iss.txt";
-			series = new TLESeries(null, true);
+			series = new TleSeries(null, true);
 			System.out.println("Series: " + series_name);
 			try {
 				URL url = new URL("http://celestrak.com/NORAD/elements/supplemental/" + series_name);
@@ -83,7 +83,7 @@ public class OrekitTest {
 			// Visual satellites
 			System.out.println();
 			series_name = "visual.txt";
-			series = new TLESeries(null, true);
+			series = new TleSeries(null, true);
 			System.out.println("Series: " + series_name);
 			try {
 				URL url = new URL("http://celestrak.com/NORAD/elements/" + series_name);

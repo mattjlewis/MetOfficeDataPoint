@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
@@ -145,7 +146,7 @@ class FlybyCalculator {
 		}
 		
 		@Override
-		public EventHandler.Action eventOccurred(SpacecraftState s,
+		public Action eventOccurred(SpacecraftState s,
 				ElevationDetector detector, boolean increasing) throws OrekitException {
 			
 			if (increasing) {
@@ -199,7 +200,7 @@ class FlybyCalculator {
 	
 	private class ElevationExtremumHandler implements EventHandler<ElevationExtremumDetector> {
 		@Override
-		public EventHandler.Action eventOccurred(SpacecraftState s,
+		public Action eventOccurred(SpacecraftState s,
 				ElevationExtremumDetector detector, boolean increasing) throws OrekitException {
 			//System.out.println("ElevationExtremum event @ " + s.getDate());
 			//Satellite.printState(frame, s);

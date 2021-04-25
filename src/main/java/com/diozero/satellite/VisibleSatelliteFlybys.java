@@ -23,7 +23,7 @@ import com.luckycatlabs.sunrisesunset.dto.Location;
 public class VisibleSatelliteFlybys {
 	public static void main(String[] args) throws MalformedURLException {
 		if (args.length < 5) {
-			System.out.println("Usage: " + VisibleSatelliteFlybys.class.getName() + " <api-key> <lat> <long> <alt> <name>");
+			System.out.println("Usage: " + VisibleSatelliteFlybys.class.getName() + " <api-key> <lat> <long> <altitude> <name>");
 			System.exit(1);
 		}
 		int arg = 0;
