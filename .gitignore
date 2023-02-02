@@ -3,3 +3,9 @@
 /.project
 /.classpath
 **/.DS_Store
+src/main/resources/orekit-data
+src/main/resources/icons
+*.csv
+*.json
+keys.txt
+flybys.jpg
