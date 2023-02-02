@@ -3,7 +3,7 @@ package com.diozero.satellite;
 import java.time.ZonedDateTime;
 import java.util.concurrent.TimeUnit;
 
-import com.diozero.satellite.orekit.SatelliteUtil;
+import com.diozero.util.DirectionUtil;
 
 public class SatelliteFlyby {
 	private String name;
@@ -22,8 +22,8 @@ public class SatelliteFlyby {
 	private int durationSeconds;
 
 	public SatelliteFlyby(ZonedDateTime approachDateTime, int approachElevation, String approachDirectionCompass,
-			int peakElevation,
-			ZonedDateTime departureDateTime, int departureElevation, String departureDirectionCompass) {
+			int peakElevation, ZonedDateTime departureDateTime, int departureElevation,
+			String departureDirectionCompass) {
 		this.peakElevation = peakElevation;
 		this.approachDateTime = approachDateTime;
 		this.approachElevation = approachElevation;
@@ -31,9 +31,9 @@ public class SatelliteFlyby {
 		this.departureDateTime = departureDateTime;
 		this.departureElevation = departureElevation;
 		this.departureDirectionCompass = departureDirectionCompass;
-		
-		approachDirectionDeg = SatelliteUtil.getDirectionDeg(approachDirectionCompass);
-		departureDirectionDeg = SatelliteUtil.getDirectionDeg(departureDirectionCompass);
+
+		approachDirectionDeg = DirectionUtil.getDirectionDeg(approachDirectionCompass);
+		departureDirectionDeg = DirectionUtil.getDirectionDeg(departureDirectionCompass);
 		durationSeconds = (int) (departureDateTime.toEpochSecond() - approachDateTime.toEpochSecond());
 	}
 
@@ -46,8 +46,8 @@ public class SatelliteFlyby {
 	}
 
 	public SatelliteFlyby(ZonedDateTime approachDateTime, int approachElevation, int approachDirectionDeg,
-			ZonedDateTime peakDateTime, int peakElevation, int peakDirectionDeg,
-			ZonedDateTime departureDateTime, int departureElevation, int departureDirectionDeg) {
+			ZonedDateTime peakDateTime, int peakElevation, int peakDirectionDeg, ZonedDateTime departureDateTime,
+			int departureElevation, int departureDirectionDeg) {
 		this.approachDateTime = approachDateTime;
 		this.approachElevation = approachElevation;
 		this.approachDirectionDeg = approachDirectionDeg;
@@ -57,10 +57,10 @@ public class SatelliteFlyby {
 		this.departureDateTime = departureDateTime;
 		this.departureElevation = departureElevation;
 		this.departureDirectionDeg = departureDirectionDeg;
-		
-		approachDirectionCompass = SatelliteUtil.getDirectionString(approachDirectionDeg);
-		peakDirectionCompass = SatelliteUtil.getDirectionString(peakDirectionDeg);
-		departureDirectionCompass = SatelliteUtil.getDirectionString(departureDirectionDeg);
+
+		approachDirectionCompass = DirectionUtil.getDirectionString(approachDirectionDeg);
+		peakDirectionCompass = DirectionUtil.getDirectionString(peakDirectionDeg);
+		departureDirectionCompass = DirectionUtil.getDirectionString(departureDirectionDeg);
 		durationSeconds = (int) (departureDateTime.toEpochSecond() - approachDateTime.toEpochSecond());
 	}
 

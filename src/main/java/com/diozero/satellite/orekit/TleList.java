@@ -1,6 +1,10 @@
 package com.diozero.satellite.orekit;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
@@ -14,15 +18,15 @@ import org.orekit.propagation.analytical.tle.TLE;
 public class TleList {
 	private Map<String, TLE> satelliteNameMapping;
 	private Map<Integer, TLE> satelliteNumberMapping;
-	
+
 	public TleList() {
 		satelliteNameMapping = new HashMap<>();
 		satelliteNumberMapping = new HashMap<>();
 	}
-	
+
 	public void load(String tleFilename) throws IOException, OrekitException {
 		OrekitUtil.initialise();
-		
+
 		for (String path : System.getProperty(DataProvidersManager.OREKIT_DATA_PATH).split(File.pathSeparator)) {
 			File p = new File(path);
 			if (DataProvider.ZIP_ARCHIVE_PATTERN.matcher(path).matches()) {
@@ -39,15 +43,15 @@ public class TleList {
 			}
 		}
 	}
-	
-	public void load (URL url) throws IOException, OrekitException {
+
+	public void load(URL url) throws IOException, OrekitException {
 		URLConnection con = url.openConnection();
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
 			load(br);
 		}
 	}
-	
-	public void load(BufferedReader reader) throws IOException, OrekitException {
+
+	private void load(BufferedReader reader) throws IOException, OrekitException {
 		int line_num = 0;
 		String name = null;
 		String line1 = null;
@@ -95,5 +99,9 @@ public class TleList {
 
 	public Map<Integer, TLE> getSatelliteNumberMapping() {
 		return satelliteNumberMapping;
+	}
+
+	public int size() {
+		return satelliteNumberMapping.size();
 	}
 }

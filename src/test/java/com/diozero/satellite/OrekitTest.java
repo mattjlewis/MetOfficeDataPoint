@@ -16,14 +16,15 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 
+import com.diozero.location.GeographicLocation;
 import com.diozero.satellite.orekit.OrekitUtil;
 import com.diozero.satellite.orekit.SatelliteUtil;
 import com.diozero.satellite.orekit.TleList;
 import com.diozero.satellite.orekit.TleSeries;
 
 /**
- * ISS: 25544
- * TIANGONG 1: 37820
+ * ISS: 25544 TIANGONG 1: 37820
+ *
  * @author MATTLEWI
  *
  */
@@ -31,38 +32,42 @@ public class OrekitTest {
 	public static void main(String[] args) {
 		try {
 			OrekitUtil.initialise();
-			
+
 			CelestialBody moon = CelestialBodyFactory.getMoon();
 			System.out.println("Loaded body " + moon.getName());
 			CelestialBody earth = CelestialBodyFactory.getEarth();
 			System.out.println("Loaded body " + earth.getName());
-			
+
 			try (BufferedReader br = new BufferedReader(new FileReader("src/main/resources/orekit-data/tle/iss.tle"))) {
 				String name = br.readLine();
 				String line1 = br.readLine();
 				String line2 = br.readLine();
 				TLE tle = new TLE(line1, line2);
-				System.out.println(name + ": " + tle.getSatelliteNumber() + ", " + tle.getLaunchNumber() + ", " + tle.getLaunchYear() + ", " + tle.getDate());
+				System.out.println(name + ": " + tle.getSatelliteNumber() + ", " + tle.getLaunchNumber() + ", "
+						+ tle.getLaunchYear() + ", " + tle.getDate());
 				System.out.println(tle);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+
 			TimeScale utc = TimeScalesFactory.getUTC();
 			AbsoluteDate date = new AbsoluteDate(new Date(), utc);
 			System.out.println("date: " + date);
-			
+
+			// Load only stations.txt from
+			// "src/main/resources/orekit-data/tle/stations.txt";
 			String series_name = "stations.txt";
 			System.out.println();
 			System.out.println("Series: " + series_name);
 			TleSeries series = new TleSeries(series_name, true);
-			System.out.println("Available satellite numbers: " + series.getAvailableSatelliteNumbers());
+			System.out.println("Available satellite numbers [" + +series.getAvailableSatelliteNumbers().size() + "] : "
+					+ series.getAvailableSatelliteNumbers());
 			TLE tle = series.getClosestTLE(date);
-			System.out.println("Closest TLE: " + tle.getSatelliteNumber() + ", " + tle.getLaunchNumber() + ", " + tle.getLaunchYear() + ", " + tle.getDate());
-			System.out.println(tle);
-			
-			// ISS TLEs
+			System.out.println("Closest TLE: " + tle.getSatelliteNumber() + ", " + tle.getLaunchNumber() + ", "
+					+ tle.getLaunchYear() + ", " + tle.getDate());
+
+			// Load iss.txt from the Internet (ISS TLEs)
 			System.out.println();
 			series_name = "iss.txt";
 			series = new TleSeries(null, true);
@@ -73,13 +78,14 @@ public class OrekitTest {
 				series.loadData(con.getInputStream(), "ISS TLEs");
 				System.out.println("Available satellite numbers: " + series.getAvailableSatelliteNumbers());
 				tle = series.getClosestTLE(date);
-				System.out.println("Closest TLE: " + tle.getSatelliteNumber() + ", " + tle.getLaunchNumber() + ", " + tle.getLaunchYear() + ", " + tle.getDate());
+				System.out.println("Closest TLE: " + tle.getSatelliteNumber() + ", " + tle.getLaunchNumber() + ", "
+						+ tle.getLaunchYear() + ", " + tle.getDate());
 				System.out.println(tle);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+
 			// Visual satellites
 			System.out.println();
 			series_name = "visual.txt";
@@ -91,33 +97,39 @@ public class OrekitTest {
 				series.loadData(con.getInputStream(), "NORAD Visual Satellites");
 				System.out.println("Available satellite numbers: " + series.getAvailableSatelliteNumbers());
 				tle = series.getClosestTLE(date);
-				System.out.println("Closest TLE: " + tle.getSatelliteNumber() + ", " + tle.getLaunchNumber() + ", " + tle.getLaunchYear() + ", " + tle.getDate());
+				System.out.println("Closest TLE: " + tle.getSatelliteNumber() + ", " + tle.getLaunchNumber() + ", "
+						+ tle.getLaunchYear() + ", " + tle.getDate());
 				System.out.println(tle);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+			System.out.println();
+
+			series_name = "visual.txt";
 			TleList list = new TleList();
 			try {
 				list.load("tle/" + series_name);
+				System.out.println("Series: " + series_name);
 				System.out.println(list.getSatelliteNameMapping());
 				System.out.println(list.getSatelliteNumberMapping());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
-			ObservationLocation obs_loc = new ObservationLocation(51.0900521, -0.7132183, 150, "Haslemere");
-			
+			System.out.println();
+
+			GeographicLocation obs_loc = new GeographicLocation(51.0900521, -0.7132183, 150, "Haslemere", "GB");
+
+			int days = 5;
 			AbsoluteDate start_date = new AbsoluteDate(new Date(), utc);
 			Calendar cal = Calendar.getInstance();
-			cal.add(Calendar.DAY_OF_MONTH, 8);
+			cal.add(Calendar.DAY_OF_MONTH, days);
 			AbsoluteDate end_date = new AbsoluteDate(cal.getTime(), utc);
 			tle = series.getFirst();
-			
-			System.out.println();
-			System.out.println(SatelliteUtil.calculateVisibleFlybys(tle, obs_loc, 10, 25, start_date, end_date));
+
+			System.out.println("Flybys for series " + series_name + " over the next " + days + " days:");
+			System.out.println(SatelliteUtil.calculateVisibleFlybys(tle, obs_loc, 10, 45, start_date, end_date));
 		} catch (OrekitException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

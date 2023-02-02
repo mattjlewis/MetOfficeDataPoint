@@ -3,60 +3,35 @@ package com.diozero.satellite;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.diozero.satellite.orekit.SatelliteUtil;
+import com.diozero.util.DirectionUtil;
 
 @SuppressWarnings("static-method")
 public class DirectionStringTest {
 	@Test
 	public void test() {
-		for (double angle=0; angle<=360; angle+=(360/32.0)) {
-			String dir = SatelliteUtil.getDirectionString((int) angle);
-			System.out.println(angle + " = " + dir);
+		for (DirectionUtil.Direction dir : DirectionUtil.Direction.values()) {
+			System.out.println(dir + ": " + dir.getAngle());
 		}
-		
-		int angle = 0;
-		String dir = SatelliteUtil.getDirectionString(angle);
-		Assertions.assertEquals("N", dir);
-		
-		angle = 11;
-		dir = SatelliteUtil.getDirectionString(angle);
-		Assertions.assertEquals("N", dir);
-		
-		angle = 360-11;
-		dir = SatelliteUtil.getDirectionString(angle);
-		Assertions.assertEquals("N", dir);
-		
-		angle = 12;
-		dir = SatelliteUtil.getDirectionString(angle);
-		Assertions.assertEquals("NNE", dir);
-		
-		angle = 90;
-		dir = SatelliteUtil.getDirectionString(angle);
-		Assertions.assertEquals("E", dir);
-		
-		angle = 180;
-		dir = SatelliteUtil.getDirectionString(angle);
-		Assertions.assertEquals("S", dir);
-		
-		dir = "NNE";
-		angle = SatelliteUtil.getDirectionDeg(dir);
-		Assertions.assertEquals(23, angle);
-		
-		dir = "NNW";
-		angle = SatelliteUtil.getDirectionDeg(dir);
-		Assertions.assertEquals(360-22, angle);
-		
-		dir = "N";
-		angle = SatelliteUtil.getDirectionDeg(dir);
-		Assertions.assertEquals(0, angle);
-		
-		dir = "S";
-		angle = SatelliteUtil.getDirectionDeg(dir);
-		Assertions.assertEquals(180, angle);
-		
-		dir = "Fred";
+
+		for (float angle = 0; angle <= 360; angle += (360 / 32f)) {
+			int int_angle = Math.round(angle);
+			System.out.println(int_angle + " = " + DirectionUtil.getDirection(int_angle));
+		}
+
+		Assertions.assertEquals(DirectionUtil.Direction.N, DirectionUtil.getDirection(0));
+		Assertions.assertEquals(DirectionUtil.Direction.E, DirectionUtil.getDirection(90));
+		Assertions.assertEquals(DirectionUtil.Direction.S, DirectionUtil.getDirection(180));
+		Assertions.assertEquals(DirectionUtil.Direction.W, DirectionUtil.getDirection(270));
+		Assertions.assertEquals(DirectionUtil.Direction.N, DirectionUtil.getDirection(360));
+		Assertions.assertEquals(DirectionUtil.Direction.N, DirectionUtil.getDirection(11));
+		Assertions.assertEquals(DirectionUtil.Direction.NNE, DirectionUtil.getDirection(12));
+		Assertions.assertEquals(DirectionUtil.Direction.NNE, DirectionUtil.getDirection(23));
+		Assertions.assertEquals(DirectionUtil.Direction.NNW, DirectionUtil.getDirection(360 - 22));
+		Assertions.assertEquals(DirectionUtil.Direction.N, DirectionUtil.getDirection(360 - 11));
+
+		String dir = "Fred";
 		try {
-			angle = SatelliteUtil.getDirectionDeg(dir);
+			DirectionUtil.getDirectionDeg(dir);
 			Assertions.fail("Error should have been thrown for invalid direction '" + dir + "'");
 		} catch (IllegalArgumentException e) {
 			// Expected, ignore

@@ -85,6 +85,8 @@ public class TleSeries implements DataLoader {
 	/** Indicator for non-TLE extra lines. */
 	private final boolean ignoreNonTLELines;
 
+	private DataProvidersManager dataProvidersManager;
+
 	/**
 	 * Simple constructor with a TLE file.
 	 * <p>
@@ -107,17 +109,18 @@ public class TleSeries implements DataLoader {
 	 */
 	public TleSeries(final String supportedNames, final boolean ignoreNonTLELines) {
 		this.supportedNames = (supportedNames == null) ? DEFAULT_SUPPORTED_NAMES : supportedNames;
-		availableSatNums = new TreeSet<Integer>();
+		availableSatNums = new TreeSet<>();
 		this.ignoreNonTLELines = ignoreNonTLELines;
 		filterSatelliteNumber = -1;
 		filterLaunchYear = -1;
 		filterLaunchNumber = -1;
 		filterLaunchPiece = null;
 
-		tles = new TreeSet<TimeStamped>(new TLEComparator());
+		tles = new TreeSet<>(new TLEComparator());
 		previous = null;
 		next = null;
 
+		dataProvidersManager = new DataProvidersManager();
 	}
 
 	/**
@@ -151,11 +154,10 @@ public class TleSeries implements DataLoader {
 		tles.clear();
 		previous = null;
 		next = null;
-		DataProvidersManager.getInstance().feed(supportedNames, this);
+		dataProvidersManager.feed(supportedNames, this);
 		if (tles.isEmpty()) {
 			throw new OrekitException(OrekitMessages.NO_TLE_DATA_AVAILABLE);
 		}
-
 	}
 
 	/**
@@ -202,9 +204,9 @@ public class TleSeries implements DataLoader {
 			tles.clear();
 			previous = null;
 			next = null;
-			DataProvidersManager.getInstance().feed(supportedNames, this);
+			dataProvidersManager.feed(supportedNames, this);
 			if (tles.isEmpty()) {
-				throw new OrekitException(OrekitMessages.NO_TLE_FOR_OBJECT, satelliteNumber);
+				throw new OrekitException(OrekitMessages.NO_TLE_FOR_OBJECT, Integer.valueOf(satelliteNumber));
 			}
 		}
 
@@ -244,25 +246,26 @@ public class TleSeries implements DataLoader {
 			tles.clear();
 			previous = null;
 			next = null;
-			DataProvidersManager.getInstance().feed(supportedNames, this);
+			dataProvidersManager.feed(supportedNames, this);
 			if (tles.isEmpty()) {
-				throw new OrekitException(OrekitMessages.NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE, launchYear, launchNumber,
-						launchPiece);
+				throw new OrekitException(OrekitMessages.NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE,
+						Integer.valueOf(launchYear), Integer.valueOf(launchNumber), launchPiece);
 			}
 		}
 
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public boolean stillAcceptsData() {
 		return tles.isEmpty();
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public void loadData(final InputStream input, final String name) throws IOException, OrekitException {
 
-		final BufferedReader r = new BufferedReader(new InputStreamReader(input, "UTF-8"));
-		try {
+		try (final BufferedReader r = new BufferedReader(new InputStreamReader(input, "UTF-8"))) {
 
 			int lineNumber = 0;
 			String pendingLine = null;
@@ -283,10 +286,9 @@ public class TleSeries implements DataLoader {
 							// just shift one line
 							pendingLine = line;
 							continue;
-						} else {
-							throw new OrekitException(OrekitMessages.NOT_TLE_LINES, lineNumber - 1, lineNumber,
-									pendingLine, line);
 						}
+						throw new OrekitException(OrekitMessages.NOT_TLE_LINES, Integer.valueOf(lineNumber - 1),
+								Integer.valueOf(lineNumber), pendingLine, line);
 					}
 
 					final TLE tle = new TLE(pendingLine, line);
@@ -300,7 +302,7 @@ public class TleSeries implements DataLoader {
 						}
 					}
 
-					availableSatNums.add(tle.getSatelliteNumber());
+					availableSatNums.add(Integer.valueOf(tle.getSatelliteNumber()));
 
 					if (tle.getSatelliteNumber() == filterSatelliteNumber) {
 						// accept this TLE
@@ -316,11 +318,9 @@ public class TleSeries implements DataLoader {
 
 			if ((pendingLine != null) && !ignoreNonTLELines) {
 				// there is an unexpected last line
-				throw new OrekitException(OrekitMessages.MISSING_SECOND_TLE_LINE, lineNumber, pendingLine);
+				throw new OrekitException(OrekitMessages.MISSING_SECOND_TLE_LINE, Integer.valueOf(lineNumber),
+						pendingLine);
 			}
-
-		} finally {
-			r.close();
 		}
 
 	}
@@ -356,9 +356,8 @@ public class TleSeries implements DataLoader {
 			// the current selection is already good
 			if (next.getDate().durationFrom(date) > date.durationFrom(previous.getDate())) {
 				return previous;
-			} else {
-				return next;
 			}
+			return next;
 		}
 		// reset the selection before the search phase
 		previous = null;
@@ -377,9 +376,8 @@ public class TleSeries implements DataLoader {
 
 		if (next.getDate().durationFrom(date) > date.durationFrom(previous.getDate())) {
 			return previous;
-		} else {
-			return next;
 		}
+		return next;
 	}
 
 	/**
