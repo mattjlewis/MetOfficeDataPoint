@@ -12,7 +12,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import com.diozero.location.GeographicLocation;
-import com.diozero.weather.openweathermap.OpenWeatherMap;
+import com.diozero.weather.openweather.OpenWeather;
 
 public class CurrentWeatherMqtt {
 	public static void main(String[] args) throws MqttException, IOException, InterruptedException {
@@ -29,7 +29,7 @@ public class CurrentWeatherMqtt {
 			System.exit(1);
 		}
 
-		final OpenWeatherMap owm = new OpenWeatherMap(args[1]);
+		final OpenWeather owm = new OpenWeather(args[1]);
 
 		List<GeographicLocation> locations = owm.getLocation(location_parts[0], location_parts[1], location_parts[2]);
 		if (locations == null || locations.size() == 0) {

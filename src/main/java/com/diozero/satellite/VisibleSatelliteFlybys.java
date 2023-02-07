@@ -22,12 +22,12 @@ import com.diozero.satellite.orekit.OrekitUtil;
 import com.diozero.satellite.orekit.SatelliteUtil;
 import com.diozero.satellite.orekit.TleList;
 import com.diozero.weather.metoffice.datapoint.DataPoint;
-import com.diozero.weather.metoffice.datapoint.DataPointForecast;
+import com.diozero.weather.metoffice.datapoint.DpForecast;
 import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
 import com.luckycatlabs.sunrisesunset.dto.Location;
 
 public class VisibleSatelliteFlybys {
-	private static final String SATELLITE_TLE_LIST_URL = "http://celestrak.com/NORAD/elements/visual.txt";
+	private static final String SATELLITE_TLE_LIST_URL = "https://celestrak.com/NORAD/elements/visual.txt";
 
 	public static void main(String[] args) {
 		if (args.length < 5) {
@@ -59,7 +59,7 @@ public class VisibleSatelliteFlybys {
 
 			// Get the 3-hourly weather forecast for this location
 			System.out.println("Getting weather forecast for " + obs_loc + "...");
-			DataPointForecast forecast = dp.getForecast(obs_loc, DataPoint.Resolution.THREE_HOURLY);
+			DpForecast forecast = dp.getForecast(obs_loc, DataPoint.Resolution.THREE_HOURLY);
 
 			OrekitUtil.initialise();
 			TimeScale utc = TimeScalesFactory.getUTC();

@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -120,7 +121,7 @@ public class TleSeries implements DataLoader {
 		previous = null;
 		next = null;
 
-		dataProvidersManager = new DataProvidersManager();
+		dataProvidersManager = DataContext.getDefault().getDataProvidersManager();
 	}
 
 	/**

@@ -2,7 +2,7 @@ package com.diozero.weather.metoffice.datapoint;
 
 import com.diozero.location.GeographicLocation;
 
-public class DataPointForecastLocation extends GeographicLocation {
+public class DpForecastLocation extends GeographicLocation {
 	private int id;
 	private String nationalPark;
 	private String region;
@@ -11,7 +11,7 @@ public class DataPointForecastLocation extends GeographicLocation {
 	private String continent;
 	private String obsSource;
 
-	public DataPointForecastLocation(double latitude, double longitude, double altitude, String name, int id,
+	public DpForecastLocation(double latitude, double longitude, double altitude, String name, int id,
 			String nationalPark, String region, String unitaryAuthArea, String country, String continent,
 			String obsSource) {
 		super(latitude, longitude, altitude, name, country);
@@ -55,5 +55,14 @@ public class DataPointForecastLocation extends GeographicLocation {
 
 	public String getObsSource() {
 		return obsSource;
+	}
+
+	@Override
+	public String toString() {
+		return "DataPointForecastLocation [id=" + id + ", nationalPark=" + nationalPark + ", region=" + region
+				+ ", unitaryAuthArea=" + unitaryAuthArea + ", country=" + country + ", continent=" + continent
+				+ ", obsSource=" + obsSource + ", latitude=" + getLatitude() + ", longitude=" + getLongitude()
+				+ ", altitude=" + getAltitude() + ", cityName=" + getCityName() + ", countryCode=" + getCountryCode()
+				+ "]";
 	}
 }

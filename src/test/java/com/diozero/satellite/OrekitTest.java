@@ -3,6 +3,7 @@ package com.diozero.satellite;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Calendar;
@@ -38,7 +39,9 @@ public class OrekitTest {
 			CelestialBody earth = CelestialBodyFactory.getEarth();
 			System.out.println("Loaded body " + earth.getName());
 
-			try (BufferedReader br = new BufferedReader(new FileReader("src/main/resources/orekit-data/tle/iss.tle"))) {
+			// From https://live.ariss.org/iss.txt, also
+			// https://celestrak.com/NORAD/elements/supplemental/iss.txt
+			try (BufferedReader br = new BufferedReader(new FileReader("src/main/resources/orekit-data/tle/iss.txt"))) {
 				String name = br.readLine();
 				String line1 = br.readLine();
 				String line2 = br.readLine();
@@ -47,7 +50,6 @@ public class OrekitTest {
 						+ tle.getLaunchYear() + ", " + tle.getDate());
 				System.out.println(tle);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -55,7 +57,7 @@ public class OrekitTest {
 			AbsoluteDate date = new AbsoluteDate(new Date(), utc);
 			System.out.println("date: " + date);
 
-			// Load only stations.txt from
+			// Load only stations.txt from http://celestrak.org/NORAD/elements/stations.txt
 			// "src/main/resources/orekit-data/tle/stations.txt";
 			String series_name = "stations.txt";
 			System.out.println();
@@ -73,16 +75,17 @@ public class OrekitTest {
 			series = new TleSeries(null, true);
 			System.out.println("Series: " + series_name);
 			try {
-				URL url = new URL("http://celestrak.com/NORAD/elements/supplemental/" + series_name);
+				URL url = new URL("https://celestrak.com/NORAD/elements/supplemental/" + series_name);
 				URLConnection con = url.openConnection();
-				series.loadData(con.getInputStream(), "ISS TLEs");
+				try (InputStream is = con.getInputStream()) {
+					series.loadData(is, "ISS TLEs");
+				}
 				System.out.println("Available satellite numbers: " + series.getAvailableSatelliteNumbers());
 				tle = series.getClosestTLE(date);
 				System.out.println("Closest TLE: " + tle.getSatelliteNumber() + ", " + tle.getLaunchNumber() + ", "
 						+ tle.getLaunchYear() + ", " + tle.getDate());
 				System.out.println(tle);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -92,29 +95,29 @@ public class OrekitTest {
 			series = new TleSeries(null, true);
 			System.out.println("Series: " + series_name);
 			try {
-				URL url = new URL("http://celestrak.com/NORAD/elements/" + series_name);
+				URL url = new URL("https://celestrak.com/NORAD/elements/" + series_name);
 				URLConnection con = url.openConnection();
-				series.loadData(con.getInputStream(), "NORAD Visual Satellites");
+				try (InputStream is = con.getInputStream()) {
+					series.loadData(is, "NORAD Visual Satellites");
+				}
 				System.out.println("Available satellite numbers: " + series.getAvailableSatelliteNumbers());
 				tle = series.getClosestTLE(date);
 				System.out.println("Closest TLE: " + tle.getSatelliteNumber() + ", " + tle.getLaunchNumber() + ", "
 						+ tle.getLaunchYear() + ", " + tle.getDate());
 				System.out.println(tle);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			System.out.println();
 
 			series_name = "visual.txt";
-			TleList list = new TleList();
+			TleList tle_list = new TleList();
 			try {
-				list.load("tle/" + series_name);
+				tle_list.load("tle/" + series_name);
 				System.out.println("Series: " + series_name);
-				System.out.println(list.getSatelliteNameMapping());
-				System.out.println(list.getSatelliteNumberMapping());
+				System.out.println(tle_list.getSatelliteNameMapping());
+				System.out.println(tle_list.getSatelliteNumberMapping());
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			System.out.println();
@@ -126,13 +129,18 @@ public class OrekitTest {
 			Calendar cal = Calendar.getInstance();
 			cal.add(Calendar.DAY_OF_MONTH, days);
 			AbsoluteDate end_date = new AbsoluteDate(cal.getTime(), utc);
-			tle = series.getFirst();
 
-			System.out.println("Flybys for series " + series_name + " over the next " + days + " days:");
-			System.out.println(SatelliteUtil.calculateVisibleFlybys(tle, obs_loc, 10, 45, start_date, end_date));
+			String tle_name = "ISS (ZARYA)";
+			tle = tle_list.getSatelliteNameMapping().get(tle_name);
+
+			System.out.println("Flybys for TLE " + tle_name + " over the next " + days + " days:");
+			SatelliteUtil.calculateVisibleFlybys(tle, obs_loc, 10, 45, start_date, end_date).forEach(OrekitTest::print);
 		} catch (OrekitException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	private static void print(SatelliteFlyby flyby) {
+		System.out.println(flyby);
 	}
 }

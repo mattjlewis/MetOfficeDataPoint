@@ -5,12 +5,12 @@ import java.util.Map;
 
 import com.diozero.weather.Forecast;
 
-public class DataPointForecast extends Forecast<DataPointReport> {
-	private DataPointForecastLocation location;
+public class DpForecast extends Forecast<DpReport> {
+	private DpForecastLocation location;
 	private Map<String, Param> params;
 	private String type;
 
-	public DataPointForecast(long forecastTime, DataPointForecastLocation location, List<DataPointReport> reports,
+	public DpForecast(long forecastTime, DpForecastLocation location, List<DpReport> reports,
 			Map<String, Param> params, String type) {
 		super(forecastTime, location, reports);
 
@@ -28,7 +28,7 @@ public class DataPointForecast extends Forecast<DataPointReport> {
 	}
 
 	@Override
-	public DataPointForecastLocation getLocation() {
+	public DpForecastLocation getLocation() {
 		return location;
 	}
 }

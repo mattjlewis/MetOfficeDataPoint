@@ -5,19 +5,19 @@ import java.time.ZonedDateTime;
 import com.diozero.util.DirectionUtil;
 import com.diozero.weather.Report;
 
-public class DataPointReport extends Report {
+public class DpReport extends Report {
 	private ZonedDateTime periodStart;
 	private int minutesAfterMidnight;
 
-	private DataPointWeatherType weatherType;
+	private DpWeatherType weatherType;
 	private Visibility visibility;
 
-	public DataPointReport(ZonedDateTime periodStart, int minutesAfterMidnight, DataPointWeatherType weatherType,
+	public DpReport(ZonedDateTime periodStart, int minutesAfterMidnight, DpWeatherType weatherType,
 			Visibility visibility, int temperature, int feelsLike, int pressure, int windSpeed, int windGust,
 			String windDirection, int precipitationProbability, int relativeHumidity, int maximumUvIndex) {
 		super(periodStart.toInstant().toEpochMilli() + minutesAfterMidnight * 60 * 1_000, temperature, feelsLike,
 				pressure, relativeHumidity, maximumUvIndex, windSpeed, windGust,
-				DirectionUtil.getDirectionDeg(windDirection), visibility.getDistance(), precipitationProbability);
+				DirectionUtil.getDirectionDeg(windDirection), visibility.getMaxDistance(), precipitationProbability);
 
 		this.periodStart = periodStart;
 		this.minutesAfterMidnight = minutesAfterMidnight;
@@ -33,7 +33,7 @@ public class DataPointReport extends Report {
 		return minutesAfterMidnight;
 	}
 
-	public DataPointWeatherType getWeatherTypeValue() {
+	public DpWeatherType getWeatherTypeValue() {
 		return weatherType;
 	}
 
@@ -51,7 +51,8 @@ public class DataPointReport extends Report {
 
 	@Override
 	public String toString() {
-		return "DataPointReport [" + super.toString() + ", periodStart=" + periodStart + ", minutesAfterMidnight="
-				+ minutesAfterMidnight + ", weatherType=" + weatherType + ", visibility=" + visibility + "]";
+		return "DataPointReport [report: " + super.toString() + ", periodStart=" + periodStart
+				+ ", minutesAfterMidnight=" + minutesAfterMidnight + ", weatherType=" + weatherType + ", visibility="
+				+ visibility + "]";
 	}
 }

@@ -52,7 +52,7 @@ public class DataPoint {
 	private static final String LATEST = "latest"; // For textual data only
 
 	private String apiKey;
-	private List<DataPointForecastLocation> locations;
+	private List<DpForecastLocation> locations;
 	private HttpClient httpClient;
 	private String rootUri;
 
@@ -109,17 +109,17 @@ public class DataPoint {
 		}
 	}
 
-	public DataPointForecast getForecast(GeographicLocation location, Resolution resolution) throws IOException {
+	public DpForecast getForecast(GeographicLocation location, Resolution resolution) throws IOException {
 		loadSiteList();
 
 		// Get the closest MetOffice weather monitoring location
-		DataPointForecastLocation fl = findClosest(location);
+		DpForecastLocation fl = findClosest(location);
 		System.out.println("Using forecast location that is closest to " + location + ": " + fl);
 
 		return getForecast(fl, resolution);
 	}
 
-	public DataPointForecast getForecast(DataPointForecastLocation dpLocation, Resolution resolution)
+	public DpForecast getForecast(DpForecastLocation dpLocation, Resolution resolution)
 			throws IOException {
 		HttpRequest request = HttpRequest.newBuilder()
 				.uri(URI.create(rootUri + "/" + dpLocation.getId() + "?key=" + apiKey + "&res=" + resolution.getCode()))
@@ -132,8 +132,8 @@ public class DataPoint {
 			}
 
 			ZonedDateTime forecast_date;
-			DataPointForecastLocation forecast_location;
-			List<DataPointReport> reports;
+			DpForecastLocation forecast_location;
+			List<DpReport> reports;
 			Map<String, Param> params;
 			String dv_type;
 			try (InputStream is = response.body(); JsonReader reader = Json.createReader(is)) {
@@ -151,7 +151,7 @@ public class DataPoint {
 				reports = parsePeriods(location_obj.getJsonArray("Period"));
 			}
 
-			return new DataPointForecast(forecast_date.toInstant().toEpochMilli(), forecast_location, reports, params,
+			return new DpForecast(forecast_date.toInstant().toEpochMilli(), forecast_location, reports, params,
 					dv_type);
 		} catch (InterruptedException e) {
 			// TODO Impl
@@ -160,10 +160,10 @@ public class DataPoint {
 		return null;
 	}
 
-	public DataPointForecastLocation findClosest(GeographicLocation location) {
+	public DpForecastLocation findClosest(GeographicLocation location) {
 		double min_dist = Double.MAX_VALUE;
-		DataPointForecastLocation closest = null;
-		for (DataPointForecastLocation fl : locations) {
+		DpForecastLocation closest = null;
+		for (DpForecastLocation fl : locations) {
 			double dist = location.distance(fl);
 			if (dist < min_dist) {
 				closest = fl;
@@ -174,8 +174,8 @@ public class DataPoint {
 		return closest;
 	}
 
-	public DataPointForecastLocation getLocation(int siteId) {
-		for (DataPointForecastLocation location : locations) {
+	public DpForecastLocation getLocation(int siteId) {
+		for (DpForecastLocation location : locations) {
 			if (location.getId() == siteId) {
 				return location;
 			}
@@ -242,11 +242,11 @@ public class DataPoint {
 		return params;
 	}
 
-	private static DataPointForecastLocation parseLocation(JsonValue value) {
+	private static DpForecastLocation parseLocation(JsonValue value) {
 		return parseLocation((JsonObject) value);
 	}
 
-	private static DataPointForecastLocation parseLocation(JsonObject obj) {
+	private static DpForecastLocation parseLocation(JsonObject obj) {
 		int id = 0;
 		float elevation = 0;
 		float latitude = 0;
@@ -303,12 +303,12 @@ public class DataPoint {
 			}
 		}
 
-		return new DataPointForecastLocation(latitude, longitude, elevation, name, id, national_park, region,
+		return new DpForecastLocation(latitude, longitude, elevation, name, id, national_park, region,
 				unitary_auth_area, country, continent, obs_source);
 	}
 
-	private static List<DataPointReport> parsePeriods(JsonArray periods_json) {
-		List<DataPointReport> reports = new ArrayList<>();
+	private static List<DpReport> parsePeriods(JsonArray periods_json) {
+		List<DpReport> reports = new ArrayList<>();
 		for (JsonValue value : periods_json) {
 			JsonObject period_obj = (JsonObject) value;
 			// Always equal to "Day"
@@ -323,7 +323,7 @@ public class DataPoint {
 		return reports;
 	}
 
-	private static DataPointReport parseReport(JsonObject object, ZonedDateTime periodStart) {
+	private static DpReport parseReport(JsonObject object, ZonedDateTime periodStart) {
 		int mins_after_midnight = 0;
 		String wind_dir = null;
 		int feels_like = 0;
@@ -334,26 +334,28 @@ public class DataPoint {
 		int wind_speed = 0;
 		int temp = 0;
 		Visibility visibility = null;
-		DataPointWeatherType weather_type = null;
+		DpWeatherType weather_type = null;
 		int max_uvi = 0;
 		for (Entry<String, JsonValue> entry : object.entrySet()) {
 			switch (entry.getKey()) {
+			// { "D":"E", "F":"-2" ,"G":"7", "H":"99", "Pp":"19", "S":"0", "T":"-1",
+			// "V":"PO", "W":"5", "U":"1", "$":"540" }
 			case "$": // Number of minutes after midnight GMT on the day represented by the Period
 				// object in which the Rep object is found
 				mins_after_midnight = Integer.parseInt(((JsonString) entry.getValue()).getString());
 				break;
 			case "W": // Weather Type
 				String weather_type_s = ((JsonString) entry.getValue()).getString().trim();
-				if (!weather_type_s.equals(DataPointWeatherType.NA.getLabel())) {
+				if (!weather_type_s.equals(DpWeatherType.NA.getLabel())) {
 					try {
-						weather_type = DataPointWeatherType.values()[Integer.parseInt(weather_type_s)];
+						weather_type = DpWeatherType.values()[Integer.parseInt(weather_type_s)];
 					} catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
 						// Ignore
 						System.out.println("Unknown weather type: " + weather_type_s);
 					}
 				}
 				if (weather_type == null) {
-					weather_type = DataPointWeatherType.NA;
+					weather_type = DpWeatherType.NA;
 				}
 				break;
 			case "V": // Visibility
@@ -391,7 +393,7 @@ public class DataPoint {
 			}
 		}
 
-		return new DataPointReport(periodStart, mins_after_midnight, weather_type, visibility, temp, feels_like,
+		return new DpReport(periodStart, mins_after_midnight, weather_type, visibility, temp, feels_like,
 				pressure, wind_speed, wind_gust, wind_dir, precip_prob, rel_hum, max_uvi);
 	}
 
